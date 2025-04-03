@@ -39,5 +39,13 @@ namespace Parcial2.Controllers
             upload.request = request;
             return await upload.GrabarArchivo(true);
         }
+        [HttpDelete]
+        [Route("EliminarArchivo")]
+        public HttpResponseMessage EliminarArchivo([FromUri] string NombreArchivo)
+        {
+            clsUpload upload = new clsUpload();
+            return upload.EliminarArchivo(NombreArchivo);
+        }
+
     }
 }

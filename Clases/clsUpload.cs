@@ -49,9 +49,12 @@ namespace Parcial2.Clases
                         {
                             if (Actualizar)
                             {
-                                //El archivo ya existe en el servidor, se elimina el original y se permite el cambio de nombre
-                                File.Delete(Path.Combine(root, fileName));
-                                File.Move(file.LocalFileName, Path.Combine(root, fileName));
+                                // Eliminar archivo existente antes de actualizar
+                                File.Delete(Proceso);
+                                await Task.Delay(100); // Esperar un poco para liberar el archivo
+
+                                // Mover el nuevo archivo con el mismo nombre
+                                File.Move(file.LocalFileName, Proceso);
                                 Existe = true;
                             }
                             else
@@ -91,6 +94,48 @@ namespace Parcial2.Clases
                 return request.CreateErrorResponse(System.Net.HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+        public HttpResponseMessage EliminarArchivo(string NombreArchivo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(NombreArchivo))
+                {
+                    return new HttpResponseMessage(HttpStatusCode.BadRequest)
+                    {
+                        Content = new StringContent("El nombre del archivo no puede estar vacío.")
+                    };
+                }
+
+                // Ruta del directorio "Archivos" dentro del proyecto
+                string ruta = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Archivos");
+                string archivoRuta = Path.Combine(ruta, NombreArchivo);
+
+                if (File.Exists(archivoRuta))
+                {
+                    File.Delete(archivoRuta);
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent("Archivo eliminado correctamente.")
+                    };
+                }
+                else
+                {
+                    return new HttpResponseMessage(HttpStatusCode.NotFound)
+                    {
+                        Content = new StringContent("El archivo no existe en el servidor.")
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent("Error al eliminar el archivo: " + ex.Message)
+                };
+            }
+        }
+
+
         public HttpResponseMessage LeerArchivo(string archivo)
         {
             HttpRequestMessage request = new HttpRequestMessage();
